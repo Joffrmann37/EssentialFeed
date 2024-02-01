@@ -18,7 +18,7 @@ class RemoteFeedLoaderTests: XCTestCase {
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
         
-        sut.load { _ in }
+        sut.load { _  in }
         
         XCTAssertEqual(client.requestedURLs, [url])
     }
@@ -27,8 +27,8 @@ class RemoteFeedLoaderTests: XCTestCase {
         let url = URL(string: "https://a-url.com")!
         let (sut, client) = makeSUT(url: url)
         
-        sut.load { _ in }
-        sut.load { _ in }
+        sut.load { _  in }
+        sut.load { _  in }
         
         XCTAssertEqual(client.requestedURLs,
         [url, url])
@@ -38,11 +38,29 @@ class RemoteFeedLoaderTests: XCTestCase {
         let (sut, client) = makeSUT()
         var capturedErrors = [RemoteFeedLoader.Error]()
         
-        sut.load { capturedErrors.append($0) }
+        sut.load { err in
+            if let err = err {
+                capturedErrors.append(err)
+            }
+        }
         
         let clientError = NSError(domain: "Test", code: 0)
         client.complete(with: clientError)
         XCTAssertEqual(capturedErrors, [.connectivity])
+    }
+    
+    func test_load_deliversErrorOnNon200HTTPResponse() {
+        let (sut, client) = makeSUT()
+        var capturedErrors = [RemoteFeedLoader.Error]()
+        
+        sut.load { err in
+            if let err = err {
+                capturedErrors.append(err)
+            }
+        }
+        
+        client.complete(withStatusCode: 400)
+        XCTAssertEqual(capturedErrors, [.invalidData])
     }
     
     private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteFeedLoader, spy: HTTPClientSpy) {
@@ -57,18 +75,23 @@ class RemoteFeedLoaderTests: XCTestCase {
             return results.map { $0.url }
         }
         
-        func get(from url: URL, completion: @escaping (Error) -> Void) {
+        func get(from url: URL, completion: @escaping (Error?, HTTPURLResponse?) -> Void) {
             let feedLoaderResult = FeedLoaderResult(url: url, completion: completion)
             results.append(feedLoaderResult)
         }
         
         func complete(with error: Error, at index: Int = 0) {
-            results[index].completion(error)
+            results[index].completion(error, nil)
+        }
+        
+        func complete(withStatusCode statusCode: Int, at index: Int = 0) {
+            let response = HTTPURLResponse(url: requestedURLs[index], statusCode: statusCode, httpVersion: nil, headerFields: nil)
+            results[index].completion(nil, response)
         }
     }
 }
 
 public struct FeedLoaderResult {
     var url: URL
-    var completion: (Error) -> Void
+    var completion: (Error?, HTTPURLResponse?) -> Void
 }
