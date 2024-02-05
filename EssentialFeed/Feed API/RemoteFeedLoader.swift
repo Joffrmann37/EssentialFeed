@@ -47,10 +47,7 @@ public final class RemoteFeedLoader {
                     let items = try FeedItemsMaapper.map(data, response)
                     completion(.success(items))
                 } catch {
-                    guard let error = error as? ErrorTypes else {
-                        return
-                    }
-                    completion(.failure(.init(errorType: error)))
+                    completion(.failure(.init(errorType: .invalidData)))
                 }
             case .failure(let error):
                 completion(.failure(error))
