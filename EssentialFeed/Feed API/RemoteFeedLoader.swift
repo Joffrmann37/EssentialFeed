@@ -13,7 +13,16 @@ public enum HTTPClientResult {
 }
 
 public protocol HTTPClient {
-    func get(from url: URL, completion: @escaping (RemoteFeedLoader.Result) -> Void)
+    func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void)
+}
+
+public enum Result: Equatable {
+    case success([FeedItem])
+    case failure(Error)
+}
+
+public struct Error: Equatable {
+    let errorType: ErrorTypes
 }
 
 public enum ErrorTypes: Swift.Error {
@@ -22,15 +31,6 @@ public enum ErrorTypes: Swift.Error {
 }
 
 public final class RemoteFeedLoader {
-    public enum Result: Equatable {
-        case success([FeedItem])
-        case failure(Error)
-    }
-
-    public struct Error: Equatable {
-        let errorType: ErrorTypes
-    }
-    
     private let url: URL
     private let client: HTTPClient
     
@@ -39,9 +39,18 @@ public final class RemoteFeedLoader {
         self.client = client
     }
     
-    public func load(completion: @escaping (RemoteFeedLoader.Result) -> Void) {
+    public func load(completion: @escaping (Result) -> Void) {
         client.get(from: url) { result in
-            completion(result)
+            switch result {
+            case let .success(data, _):
+                if let _ = try? JSONSerialization.jsonObject(with: data) {
+                    completion(.success([]))
+                } else {
+                    completion(.failure(.init(errorType: .invalidData)))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
 }
