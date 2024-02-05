@@ -14,16 +14,6 @@ public struct FeedItem: Equatable {
     let imageURL: URL
 }
 
-
-extension FeedItem: Decodable {
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case description
-        case location
-        case imageURL = "image"
-    }
-}
-
 public struct FeedItemFactory {
     static func make(id: UUID, description: String?, location: String?, imageURL: URL) -> (model: FeedItem, json: [String:Any]) {
         let item = FeedItem(id: id, description: description, location: location, imageURL: imageURL)

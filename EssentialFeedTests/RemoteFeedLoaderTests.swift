@@ -67,6 +67,15 @@ class RemoteFeedLoaderTests: XCTestCase {
     func test_load_deliversNoItemsOn200HTTPResponseWithEmptyJSONList() {
         let (sut, client) = makeSUT()
         
+        expect(sut, toCompleteWithResult: .success([])) {
+            let emptyListJSON = Data("{\"items\": []}".utf8)
+            client.complete(withStatusCode: 200, data: emptyListJSON)
+        }
+    }
+    
+    func test_load_deliversItemsOn200HTTPResponseWithJSONItems() {
+        let (sut, client) = makeSUT()
+        
         let (item1, item1JSON) = makeItem(id: UUID(), imageURL: URL(string: "http://a-url.com")!)
         
         let (item2, item2JSON) = makeItem(id: UUID(), description: "a description", location: "a location", imageURL: URL(string: "http://another-url.com")!)
@@ -74,15 +83,6 @@ class RemoteFeedLoaderTests: XCTestCase {
         expect(sut, toCompleteWithResult: .success([item1, item2])) {
             let json = makeItemsJSON([item1JSON, item2JSON])
             client.complete(withStatusCode: 200, data: json)
-        }
-    }
-    
-    func test_load_deliversItemsOn200HTTPResponseWithJSONItems() {
-        let (sut, client) = makeSUT()
-        
-        expect(sut, toCompleteWithResult: .success([])) {
-            let emptyListJSON = Data("{\"items\": []}".utf8)
-            client.complete(withStatusCode: 200, data: emptyListJSON)
         }
     }
     
@@ -111,24 +111,6 @@ class RemoteFeedLoaderTests: XCTestCase {
         
         sut.load { capturedResults.append($0) }
         action()
-        
-        XCTAssertEqual(capturedResults, [result], file: file, line: line)
-    }
-    
-    private func expect(_ sut: RemoteFeedLoader, withJson json: Data, when action: (Result) -> Void, file: StaticString = #file, line: UInt = #line) {
-        var result: Result!
-        
-        do {
-            let items = try JSONDecoder().decode([FeedItem].self, from: json)
-            result = .success(items)
-        } catch {
-            result = .failure(.init(errorType: .invalidData))
-        }
-        
-        var capturedResults = [Result]()
-        
-        sut.load { capturedResults.append($0) }
-        action(result)
         
         XCTAssertEqual(capturedResults, [result], file: file, line: line)
     }
