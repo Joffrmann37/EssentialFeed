@@ -124,13 +124,37 @@ class RemoteFeedLoaderTests: XCTestCase {
         return try! JSONSerialization.data(withJSONObject: itemsJSON)
     }
     
-    private func expect(_ sut: RemoteFeedLoader, withJson json: Data? = nil, toCompleteWithResult result: RemoteFeedLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
-        var capturedResults = [RemoteFeedLoader.Result]()
+    private func expect(_ sut: RemoteFeedLoader, toCompleteWithResult expectedResult: RemoteFeedLoader.Result, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         
-        sut.load { capturedResults.append($0) }
+        let expectation = expectation(description: "Wait for load completion")
+        sut.load { [weak self] receivedResult in
+            guard let self = self else { return }
+            let (isSuccess, isResultsMatch) = compare(receivedResult: receivedResult, expectedResult: expectedResult)
+            guard isResultsMatch else {
+                XCTFail("Expected result \(expectedResult) got \(receivedResult) instead", file: file, line: line)
+                return
+            }
+            XCTAssertTrue(isSuccess, file: file, line: line)
+            expectation.fulfill()
+        }
         action()
         
-        XCTAssertEqual(capturedResults, [result], file: file, line: line)
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    private func compare(receivedResult: RemoteFeedLoader.Result, 
+                         expectedResult: RemoteFeedLoader.Result,
+                         file: StaticString = #file,
+                         line: UInt = #line) -> (isSuccess: Bool,
+                                                 isResultsMatch: Bool)  {
+        switch (receivedResult, expectedResult) {
+        case let (.success(receivedItems), .success(expectedItems)):
+            return (receivedItems == expectedItems, true)
+        case let (.failure(receivedError), .failure(expectedError)):
+            return (receivedError == expectedError, true)
+        default:
+            return (false, false)
+        }
     }
     
     private class HTTPClientSpy: HTTPClient {
