@@ -7,10 +7,8 @@
 
 import Foundation
 
-public final class RemoteFeedLoader {
-    public struct Error: Equatable {
-        let errorType: ErrorTypes
-    }
+public final class RemoteFeedLoader: FeedLoader {
+    public typealias Error = ErrorTypes
 
     public enum ErrorTypes: Swift.Error {
         case connectivity

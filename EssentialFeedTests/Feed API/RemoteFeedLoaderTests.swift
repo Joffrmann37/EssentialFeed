@@ -36,19 +36,16 @@ class RemoteFeedLoaderTests: XCTestCase {
     
     func test_load_deliversErrorOnClientError() {
         let (sut, client) = makeSUT()
-        let error = RemoteFeedLoader.Error(errorType: .connectivity)
-        expect(sut, toCompleteWithResult: .failure(error), when: {
-            let clientError = RemoteFeedLoader.Error(errorType: .connectivity)
-            client.complete(with: clientError)
+        expect(sut, toCompleteWithResult: .failure(.connectivity), when: {
+            client.complete(with: .connectivity)
         })
     }
     
     func test_load_deliversErrorOnNon200HTTPResponse() {
         let (sut, client) = makeSUT()
         let samples = [199, 201, 300, 400, 500]
-        let error = RemoteFeedLoader.Error(errorType: .invalidData)
         samples.enumerated().forEach { index, code in
-            expect(sut, toCompleteWithResult: .failure(error), when: {
+            expect(sut, toCompleteWithResult: .failure(.invalidData), when: {
                 let json = makeItemsJSON([])
                 client.complete(withStatusCode: code, data: json, at: index)
             })
@@ -57,8 +54,7 @@ class RemoteFeedLoaderTests: XCTestCase {
     
     func test_load_deliversErrorOn200HTTPResponseWithInvalidJSON() {
         let (sut, client) = makeSUT()
-        let error = RemoteFeedLoader.Error(errorType: .invalidData)
-        expect(sut, toCompleteWithResult: .failure(error)) {
+        expect(sut, toCompleteWithResult: .failure(.invalidData)) {
             let invalidJSON = Data("invalid json".utf8)
             client.complete(withStatusCode: 200, data: invalidJSON)
         }
