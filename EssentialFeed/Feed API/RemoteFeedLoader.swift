@@ -15,7 +15,7 @@ public final class RemoteFeedLoader: FeedLoader {
         case invalidData
     }
     
-    public typealias Result = LoadFeedResult<ErrorTypes>
+    public typealias Result = LoadFeedResult
     private let url: URL
     private let client: HTTPClient
     
@@ -24,7 +24,7 @@ public final class RemoteFeedLoader: FeedLoader {
         self.client = client
     }
     
-    public func load(completion: @escaping (LoadFeedResult<ErrorTypes>) -> Void) {
+    public func load(completion: @escaping (LoadFeedResult) -> Void) {
         client.get(from: url) { [weak self] result in
             guard self != nil else { return }
             
