@@ -3,4 +3,102 @@
    uuid = "70E3E3B0-66BE-4EBB-8819-2E5369A2B0B4"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "AC3F86E9-3EE2-4A9D-A824-6C18334DBF4D"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "EssentialFeedTests/Feed API/URLSessionHTTPClientTests.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "63"
+            endingLineNumber = "63"
+            landmarkName = "stub(url:task:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "AC3F86E9-3EE2-4A9D-A824-6C18334DBF4D - fae21c2734eba93c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "EssentialFeedTests.URLSessionHTTPClientTests.URLSessionWrapper.stub(url: Foundation.URL, task: __C.NSURLSessionDataTask) -&gt; ()"
+                  moduleName = "EssentialFeedTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/joffreymann/Documents/ios-practice/EssentialFeed/EssentialFeedTests/Feed%20API/URLSessionHTTPClientTests.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62"
+                  offsetFromSymbolStart = "139">
+               </Location>
+               <Location
+                  uuid = "AC3F86E9-3EE2-4A9D-A824-6C18334DBF4D - fae21c2734eba953"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "EssentialFeedTests.URLSessionHTTPClientTests.URLSessionWrapper.stub(url: Foundation.URL, task: __C.NSURLSessionDataTask) -&gt; ()"
+                  moduleName = "EssentialFeedTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/joffreymann/Documents/ios-practice/EssentialFeed/EssentialFeedTests/Feed%20API/URLSessionHTTPClientTests.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "63"
+                  endingLineNumber = "63"
+                  offsetFromSymbolStart = "139">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "452F3C30-FB39-4617-9A8E-09CBCAA5B2E4"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "EssentialFeedTests/Feed API/URLSessionHTTPClientTests.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "67"
+            endingLineNumber = "67"
+            landmarkName = "dataTask(with:completionHandler:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "452F3C30-FB39-4617-9A8E-09CBCAA5B2E4 - 7a0c21174501380b"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "EssentialFeedTests.URLSessionHTTPClientTests.URLSessionWrapper.dataTask(with: Foundation.URL, completionHandler: @Sendable (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; __C.NSURLSessionDataTask"
+                  moduleName = "EssentialFeedTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/joffreymann/Documents/ios-practice/EssentialFeed/EssentialFeedTests/Feed%20API/URLSessionHTTPClientTests.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "66"
+                  endingLineNumber = "66"
+                  offsetFromSymbolStart = "237">
+               </Location>
+               <Location
+                  uuid = "452F3C30-FB39-4617-9A8E-09CBCAA5B2E4 - 7a0c21174501386c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "EssentialFeedTests.URLSessionHTTPClientTests.URLSessionWrapper.dataTask(with: Foundation.URL, completionHandler: @Sendable (Swift.Optional&lt;Foundation.Data&gt;, Swift.Optional&lt;__C.NSURLResponse&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; ()) -&gt; __C.NSURLSessionDataTask"
+                  moduleName = "EssentialFeedTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/joffreymann/Documents/ios-practice/EssentialFeed/EssentialFeedTests/Feed%20API/URLSessionHTTPClientTests.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "67"
+                  endingLineNumber = "67"
+                  offsetFromSymbolStart = "237">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

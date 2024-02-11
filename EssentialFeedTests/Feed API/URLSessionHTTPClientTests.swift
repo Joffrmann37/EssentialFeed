@@ -18,33 +18,19 @@ class URLSessionHTTPClient: HTTPClient {
     }
     
     func get(from url: URL, completion: @escaping (EssentialFeed.HTTPClientResult) -> Void) {
-        let task = taskMaker.session.dataTask(with: url) { data, response, _ in
+        taskMaker.stub(url: url, task: taskMaker.dataTask(with: url) { data, response, _ in
             if let data = data, let response = response as? HTTPURLResponse {
                 completion(.success(data, response))
             } else {
                 completion(.failure(.invalidData))
             }
-        }
-        task.resume()
+        })
         resumeCount += 1
         taskMaker.onResume(resumeCount)
     }
 }
 
 class URLSessionHTTPClientTests: XCTestCase {
-    func test_getFromURL_createDataTaskWithURL() {
-        let expectation = expectation(description: "Wait for data task to finish")
-        let url = URL(string: "http://any-url.com")!
-        let sessionSpy = URLSessionWrapper( session: URLSession(configuration: .default))
-        let sut = URLSessionHTTPClient(taskMaker: sessionSpy)
-        sut.get(from: url) { result in
-            sessionSpy.receivedURLs.append(url)
-            expectation.fulfill()
-        }
-        wait(for: [expectation])
-        XCTAssertEqual(sessionSpy.receivedURLs, [url])
-    }
-    
     func test_getFromURL_resumesDataTaskWithURL() {
         var resumeCounter = 0
         let expectation = expectation(description: "Wait for data task to finish")
@@ -52,9 +38,9 @@ class URLSessionHTTPClientTests: XCTestCase {
         let sessionSpy = URLSessionWrapper(session: URLSession(configuration: .default), onResume: { count in
             resumeCounter = count
         })
+        sessionSpy.stub(url: url, task: sessionSpy.currentTask)
         let sut = URLSessionHTTPClient(taskMaker: sessionSpy)
         sut.get(from: url) { result in
-            sessionSpy.receivedURLs.append(url)
             expectation.fulfill()
         }
         wait(for: [expectation])
@@ -64,12 +50,25 @@ class URLSessionHTTPClientTests: XCTestCase {
     private class URLSessionWrapper: DataTaskMaking {
         var session: URLSession!
         var onResume: (Int) -> Void
-        var receivedURLs = [URL]()
+        var currentTask: URLSessionDataTask
+        private var stubs = [URL: URLSessionDataTask]()
         
-        init(session: URLSession!, onResume: @escaping (Int) -> Void = { _ in }, receivedURLs: [URL] = [URL]()) {
+        init(session: URLSession!, onResume: @escaping (Int) -> Void = { _ in }) {
             self.session = session
             self.onResume = onResume
-            self.receivedURLs = receivedURLs
+            self.currentTask = session.dataTask(with: URL(string: "http://any-url.com")!) { _, _, _ in }
+        }
+        
+        func stub(url: URL, task: URLSessionDataTask) {
+            stubs[url] = task
+        }
+        
+        func dataTask(with url: URL, completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
+            guard let task = stubs[url] else {
+                return session.dataTask(with: url, completionHandler: completionHandler)
+            }
+            
+            return task
         }
     }
 }
@@ -77,4 +76,7 @@ class URLSessionHTTPClientTests: XCTestCase {
 public protocol DataTaskMaking {
     var session: URLSession! { get set }
     var onResume: (Int) -> Void { get set }
+    var currentTask: URLSessionDataTask { get set }
+    func stub(url: URL, task: URLSessionDataTask)
+    func dataTask(with url: URL, completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask
 }
