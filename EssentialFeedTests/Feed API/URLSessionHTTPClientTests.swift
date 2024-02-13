@@ -41,20 +41,8 @@ class URLSessionHTTPClient: HTTPClient {
 class URLSessionHTTPClientTests: XCTestCase {
     func test_getFromURL_resumesDataTaskWithURL() {
         var resumeCounter = 0
-        let expectation = expectation(description: "Wait for data task to finish")
-        expectation.expectedFulfillmentCount = 2
         let url = URL(string: "http://any-url.com")!
-        let session = URLSession(configuration: .default)
-        let sessionSpy = URLSessionWrapper(session: session)
-        let task = session.dataTask(with: url) { data, response, _ in
-            guard let response = response as? HTTPURLResponse else {
-                sessionSpy.taskResult = DataTaskResult(data: data, response: nil, error: nil)
-                expectation.fulfill()
-                return
-            }
-            sessionSpy.taskResult = DataTaskResult(data: data, response: response, error: nil)
-            expectation.fulfill()
-        }
+        let (task, expectation, sessionSpy) = testTaskWithExpectation(url: url, error: nil, fulfillmentCount: 2)
         task.resume()
         sessionSpy.stub(url: url, task: task)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -70,21 +58,9 @@ class URLSessionHTTPClientTests: XCTestCase {
     }
     
     func test_getFromURL_failsOnRequestError() {
-        let expectation = expectation(description: "Wait for data task to finish")
         let url = URL(string: "http://any-url.com")!
         let error = NSError(domain: RemoteFeedLoader.Error.errorDomain, code: 0)
-        let session = URLSession(configuration: .default)
-        let sessionSpy = URLSessionWrapper(session: session)
-        let task = session.dataTask(with: url) { data, response, error in
-            guard let response = response as? HTTPURLResponse else {
-                sessionSpy.taskResult = DataTaskResult(data: data, response: nil, error: RemoteFeedLoader.Error.connectivity)
-                expectation.fulfill()
-                return
-            }
-            sessionSpy.taskResult = DataTaskResult(data: data, response: response, error: RemoteFeedLoader.Error.connectivity)
-            expectation.fulfill()
-        }
-        sessionSpy.stub(url: url, task: task, error: error)
+        let (task, expectation, sessionSpy) = testTaskWithExpectation(url: url, error: error)
         task.resume()
         wait(for: [expectation])
         sessionSpy.stub(url: url, task: task)
@@ -97,6 +73,25 @@ class URLSessionHTTPClientTests: XCTestCase {
                 XCTFail("Expected failure with error \(error), got \(result) instead")
             }
         }
+    }
+    
+    // MARK: Helper Functions
+    private func testTaskWithExpectation(url: URL, error: NSError? = nil, fulfillmentCount: Int = 1) -> (URLSessionDataTask, XCTestExpectation, URLSessionWrapper) {
+        let expectation = expectation(description: "Wait for data task to finish")
+        expectation.expectedFulfillmentCount = fulfillmentCount
+        let session = URLSession(configuration: .default)
+        let sessionSpy = URLSessionWrapper(session: session)
+        let task = session.dataTask(with: url) { data, response, error in
+            guard let response = response as? HTTPURLResponse else {
+                sessionSpy.taskResult = DataTaskResult(data: data, response: nil, error: RemoteFeedLoader.Error.connectivity)
+                expectation.fulfill()
+                return
+            }
+            sessionSpy.taskResult = DataTaskResult(data: data, response: response, error: RemoteFeedLoader.Error.connectivity)
+            expectation.fulfill()
+        }
+        sessionSpy.stub(url: url, task: task, error: error)
+        return (task, expectation, sessionSpy)
     }
     
     private class URLSessionWrapper: DataTaskMaking {
