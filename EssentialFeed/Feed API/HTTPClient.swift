@@ -9,7 +9,7 @@ import Foundation
 
 public enum HTTPClientResult {
     case success(Data, HTTPURLResponse)
-    case failure(RemoteFeedLoader.Error)
+    case failure(Error)
 }
 
 public protocol HTTPClient {
