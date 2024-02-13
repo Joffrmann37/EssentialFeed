@@ -13,6 +13,7 @@ class URLSessionHTTPClient {
     private var onResume: (Int) -> Void
     private var resumeCount = 0
     
+    struct UnexpectedValuesRepresentation: Error {}
     
     fileprivate init(session: URLSession = .shared, onResume: @escaping (Int) -> Void = { _ in }) {
         self.session = session
@@ -59,6 +60,23 @@ class URLSessionHTTPClientTests: XCTestCase {
     }
     
     func test_getFromURL_failsOnRequestError() {
+        let expectation = expectation(description: "Wait for completion")
+        
+        URLProtocolStub.stub(data: nil, response: nil, error: nil)
+        makeSUT().get(from: anyURL()) { result in
+            switch result {
+            case .failure(let error):
+                break
+            default:
+                XCTFail("Expected failure, got \(result) instead")
+            }
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func test_getFromURL_failsOnAllNilValues() {
         let requestError = NSError(domain: "any error", code: 1)
         
         let receivedError = resultErrorFor(data: nil, response: nil, error: requestError)
