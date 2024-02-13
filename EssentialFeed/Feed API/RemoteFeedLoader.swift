@@ -10,8 +10,8 @@ import Foundation
 public final class RemoteFeedLoader: FeedLoader {
     public typealias Error = ErrorTypes
 
-    public enum ErrorTypes: Swift.Error {
-        case connectivity
+    public enum ErrorTypes: Int, Swift.Error {
+        case connectivity = 0
         case invalidData
     }
     

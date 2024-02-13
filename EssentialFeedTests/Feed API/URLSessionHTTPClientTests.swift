@@ -11,7 +11,7 @@ import XCTest
 public struct DataTaskResult {
     let data: Data?
     let response: HTTPURLResponse?
-    let error: Error?
+    let error: RemoteFeedLoader.Error?
 }
 
 class URLSessionHTTPClient: HTTPClient {
@@ -27,11 +27,11 @@ class URLSessionHTTPClient: HTTPClient {
         self.result = result
     }
     
-    func get(from url: URL, completion: @escaping (EssentialFeed.HTTPClientResult) -> Void) {
+    func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
         if let data = result.data, let response = result.response {
             completion(.success(data, response))
-        } else {
-            completion(.failure(.invalidData))
+        } else if let error = result.error {
+            completion(.failure(error))
         }
         resumeCount += 1
         onResume(resumeCount)
@@ -39,11 +39,11 @@ class URLSessionHTTPClient: HTTPClient {
 }
 
 class URLSessionHTTPClientTests: XCTestCase {
-    func test_getFromURL_resumesDataTaskWithURLSuccess() {
+    func test_getFromURL_resumesDataTaskWithURL() {
         var resumeCounter = 0
         let expectation = expectation(description: "Wait for data task to finish")
         expectation.expectedFulfillmentCount = 2
-        let url = URL(string: "http://espn.com")!
+        let url = URL(string: "http://any-url.com")!
         let session = URLSession(configuration: .default)
         let sessionSpy = URLSessionWrapper(session: session)
         let task = session.dataTask(with: url) { data, response, _ in
@@ -69,26 +69,65 @@ class URLSessionHTTPClientTests: XCTestCase {
         XCTAssertEqual(resumeCounter, 1)
     }
     
+    func test_getFromURL_failsOnRequestError() {
+        let expectation = expectation(description: "Wait for data task to finish")
+        let url = URL(string: "http://any-url.com")!
+        let error = NSError(domain: RemoteFeedLoader.Error.errorDomain, code: 0)
+        let session = URLSession(configuration: .default)
+        let sessionSpy = URLSessionWrapper(session: session)
+        let task = session.dataTask(with: url) { data, response, error in
+            guard let response = response as? HTTPURLResponse else {
+                sessionSpy.taskResult = DataTaskResult(data: data, response: nil, error: RemoteFeedLoader.Error.connectivity)
+                expectation.fulfill()
+                return
+            }
+            sessionSpy.taskResult = DataTaskResult(data: data, response: response, error: RemoteFeedLoader.Error.connectivity)
+            expectation.fulfill()
+        }
+        sessionSpy.stub(url: url, task: task, error: error)
+        task.resume()
+        wait(for: [expectation])
+        sessionSpy.stub(url: url, task: task)
+        let sut = URLSessionHTTPClient(task: sessionSpy.getStubs()[url]!.task, result: sessionSpy.taskResult)
+        sut.get(from: url) { result in
+            switch result {
+            case .failure(let receivedError):
+                XCTAssertEqual(receivedError, .connectivity)
+            default:
+                XCTFail("Expected failure with error \(error), got \(result) instead")
+            }
+        }
+    }
+    
     private class URLSessionWrapper: DataTaskMaking {
         var session: URLSession!
         var taskResult: DataTaskResult!
-        private var stubs = [URL: URLSessionDataTask]()
+        private var stubs = [URL: Stub]()
+        
+        struct Stub {
+            let task: URLSessionDataTask
+            let error: Error?
+        }
         
         init(session: URLSession!) {
             self.session = session
         }
         
-        func stub(url: URL, task: URLSessionDataTask) {
-            stubs[url] = task
+        func stub(url: URL, task: URLSessionDataTask, error: Error? = nil) {
+            stubs[url] = Stub(task: task, error: error)
         }
         
         func dataTask(with url: URL, completionHandler: @escaping @Sendable (DataTaskResult) -> Void) -> URLSessionDataTask {
-            guard let task = stubs[url] else {
-                return session.dataTask(with: url) { _, _, _ in}
+            guard let stub = stubs[url] else {
+                fatalError("Couldn't find stub for \(url)")
             }
             
             completionHandler(taskResult)
-            return task
+            return stub.task
+        }
+        
+        func getStubs() -> [URL: Stub] {
+            return stubs
         }
     }
 }
