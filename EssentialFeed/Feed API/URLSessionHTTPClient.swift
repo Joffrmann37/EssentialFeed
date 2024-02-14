@@ -9,14 +9,11 @@ import Foundation
 
 public class URLSessionHTTPClient: HTTPClient {
     private var session: URLSession
-    private var onResume: (Int) -> Void
-    private var resumeCount = 0
     
     private struct UnexpectedValuesRepresentation: Error {}
     
     public init(session: URLSession = .shared, onResume: @escaping (Int) -> Void = { _ in }) {
         self.session = session
-        self.onResume = onResume
     }
     
     public func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void) {
@@ -29,7 +26,5 @@ public class URLSessionHTTPClient: HTTPClient {
                 completion(.failure(UnexpectedValuesRepresentation()))
             }
         }.resume()
-        resumeCount += 1
-        onResume(resumeCount)
     }
 }
