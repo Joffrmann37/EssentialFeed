@@ -10,8 +10,8 @@ import Foundation
 public final class RemoteFeedLoader: FeedLoader {
     public typealias Error = ErrorTypes
 
-    public enum ErrorTypes: Int, Swift.Error {
-        case connectivity = 0
+    public enum ErrorTypes: Swift.Error {
+        case connectivity
         case invalidData
     }
     
@@ -29,12 +29,10 @@ public final class RemoteFeedLoader: FeedLoader {
             guard self != nil else { return }
             
             switch result {
-            case let .success(data, response):
+            case .success(let data, let response):
                 completion(FeedItemsMapper.map(data, response))
-            case let .failure(error as RemoteFeedLoader.Error):
-                completion(.failure(error))
-            case .failure(_):
-                completion(.failure(.invalidData))
+            case .failure(let error):
+                completion(.failure(error as! RemoteFeedLoader.Error))
             }
         }
     }
