@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>EssentialFeedAPIEndToEndTests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>RemoteFeedLoaderTests.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
@@ -28,6 +33,11 @@
 			<true/>
 		</dict>
 		<key>B40AF11E2B691D540058194C</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B40AF18B2B7D4BB70058194C</key>
 		<dict>
 			<key>primary</key>
 			<true/>
